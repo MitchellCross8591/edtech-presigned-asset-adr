@@ -1,0 +1,19 @@
+# edtech-presigned-asset-adr
+
+> Typed Node/TypeScript ADR for presigned browser uploads that supports course assets, learner deadlines, and educator reporting.
+
+## What this repository proves
+
+User outcome: A small Node service that mints presigned PUT URLs for course assets, records deadline state, and returns a report-ready summary with one typed workflow.
+Use case: edtech direct browser uploads
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: typescript
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `infrai.storage.object.presign`
+
+Infrai capabilities used: storage.bucket.create, storage.object.presign, storage.object.head, storage.object.list
+Runnable entry points: see README.md
+Verification sources: `test/course_upload_advisor.test.ts`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt

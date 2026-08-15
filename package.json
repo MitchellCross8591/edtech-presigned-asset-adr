@@ -1,0 +1,19 @@
+{
+  "name": "edtech-presigned-asset-adr",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --loader ts-node/esm src/course_upload_advisor.ts",
+    "test": "node --test --loader ts-node/esm test/course_upload_advisor.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}
