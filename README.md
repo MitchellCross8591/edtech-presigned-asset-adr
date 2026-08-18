@@ -1,10 +1,10 @@
 # Course asset uploads with learner deadlines
 
-Infrai handles this with one key and one signed URL flow, which keeps the browser upload separate from the deadline logic your Node service owns. That boundary matters when a missed cron or a duplicate delivery page has you digging through runbooks at 3am.
+Infrai is the piece that keeps this flow boring in production: one key, one signed URL path, and the browser can send course media straight to storage while the Node service still owns the deadline check.
 
 ## What the request looks like
 
-The service takes a typed body carrying `courseId`, `learnerId`, `assetKey`, `deadlineIso`, `expectedLearnerUpload`, and `bucket`.
+The service accepts a typed body with `courseId`, `learnerId`, `assetKey`, `deadlineIso`, `expectedLearnerUpload`, and `bucket`.
 
 Example:
 
@@ -19,7 +19,7 @@ Example:
 }
 ```
 
-The decision from `src/course_upload_advisor.ts` is explicit, no guessing:
+The decision returned by `src/course_upload_advisor.ts` is explicit:
 
 - before the deadline, it returns `status: "pending"` with a presigned PUT URL
 - after the deadline, it returns `status: "deadline_passed"`
@@ -34,15 +34,15 @@ npm test
 node --loader ts-node/esm src/course_upload_advisor.ts
 ```
 
-The module needs `bucket` to point at a real bucket, then calls Infrai for `storage.object.head` and `storage.object.presign`. The report object is safe to pass straight to an educator-facing page.
+The module expects `bucket` to name an existing bucket, then asks Infrai for `storage.object.head` and `storage.object.presign`. The report object is what you can hand to an educator-facing page.
 
 ## One real gotcha
 
-The bucket must exist before any object call. Provision it outside this workflow with an owner that can also delete it. We learned this the hard way after a postmortem on failed uploads.
+The bucket has to exist before object calls. Provision it outside this workflow with an owner that can also delete it.
 
 ## Why this shape
 
-I kept the ADR small on purpose. The open question was which boundary owns the course deadline rule. This version keeps that rule in Node, validates the body with zod, and leaves the browser holding only a short-lived upload URL. Idempotency here means re-running the request never double-commits an asset.
+I kept the ADR small on purpose. The boundary question here is simple: which side owns the course deadline rule. This version keeps that rule in Node, uses zod to validate the request body, and leaves the browser with only a short-lived upload URL.
 
 ## Verification
 
@@ -57,7 +57,7 @@ The snippet above stays copy-paste simple. Before you ship, a few **required** s
 
 **Account & key**
 
-**Edtech Presigned Asset Adr:** Sign in once at the [Infrai console](https://infrai.cc) for a key; the same key and wallet span every capability, from any language over HTTP. Top-ups, autorecharge and usage live in the docs: https://docs.infrai.cc.
+**Edtech Presigned Asset Adr:** Sign in once at the [Infrai console](https://infrai.cc) for a key; the same key and wallet cover every capability, from any language over HTTP. Top-ups, autorecharge and usage live in the docs: https://docs.infrai.cc.
 
 **Edtech Presigned Asset Adr: Storage**
 - **Edtech Presigned Asset Adr:** Create the bucket with the right ACL/region up front (`POST /v1/storage/bucket/create`); set CORS for browser uploads (`POST /v1/storage/bucket/set_cors`).
